@@ -80,3 +80,19 @@ class SchemaAPI:
             del r["_id"]
 
         return results
+
+    def save(self, name: str, sense: dict):
+        tag = name.split("-")[0]
+        cat = ''.join(i for i in name.split("-")[1] if not i.isdigit())
+
+        sense["SENSE"] = name
+        sense["TAG"] = tag
+        sense["CAT"] = cat
+
+        self.collection.delete_one({"SENSE": name})
+        self.collection.insert_one(sense)
+
+        del sense["_id"]
+
+    def delete(self, sense: str):
+        self.collection.delete_one({"SENSE": sense})
