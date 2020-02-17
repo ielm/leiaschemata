@@ -121,3 +121,28 @@ class SchemaAPITestCase(unittest.TestCase):
             sense2["SENSE"] in map(lambda sense: sense["SENSE"], senses))
         self.assertFalse(
             sense3["SENSE"] in map(lambda sense: sense["SENSE"], senses))
+
+    def test_save(self):
+        sense = mockSchema("MY_SCHEMA-REQ_ACT1", save=False)
+
+        SchemaAPI().save("MY_SCHEMA-REQ_ACT1", sense)
+        loaded = SchemaAPI().get_sense("MY_SCHEMA-REQ_ACT1")
+        self.assertEqual(loaded, sense)
+
+        sense = mockSchema("MY_SCHEMA-REQ_ACT1", save=False, definition="xyz")
+
+        SchemaAPI().save("MY_SCHEMA-REQ_ACT1", sense)
+        loaded = SchemaAPI().get_sense("MY_SCHEMA-REQ_ACT1")
+        self.assertEqual(loaded, sense)
+
+    def test_delete(self):
+        sense1 = mockSchema("MY_SCHEMA-REQ_ACT1")
+        sense2 = mockSchema("MY_SCHEMA-REQ_ACT2")
+
+        SchemaAPI().delete("MY_SCHEMA-REQ_ACT1")
+
+        senses = SchemaAPI().list_senses("MY_SCHEMA")
+        self.assertEqual(1, len(senses))
+        self.assertEqual(senses, ["MY_SCHEMA-REQ_ACT2"])
+
+
