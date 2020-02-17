@@ -1,0 +1,10 @@
+.idea*
+*~
+*.pyc
+.DS_Store
+__pychache__
+
+.virtualenvs/
+LEIASchemata.egg-info/
+dist/
+build/
