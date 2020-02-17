@@ -9,9 +9,12 @@ from pymongo import MongoClient
 ARCHIVE_PATH = "ARCHIVE_PATH"
 SCHEMA_ACTIVE = "SCHEMA_ACTIVE"
 
-MONGO_HOST = os.environ["MONGO_HOST"] if "MONGO_HOST" in os.environ else "localhost"
-MONGO_PORT = int(os.environ["MONGO_PORT"]) if "MONGO_PORT" in os.environ else 27017
-DATABASE = os.environ["MONGO_DATABASE"] if "MONGO_DATABASE" in os.environ else "leia-schemata"
+MONGO_HOST = os.environ[
+    "MONGO_HOST"] if "MONGO_HOST" in os.environ else "localhost"
+MONGO_PORT = int(
+    os.environ["MONGO_PORT"]) if "MONGO_PORT" in os.environ else 27017
+DATABASE = os.environ[
+    "MONGO_DATABASE"] if "MONGO_DATABASE" in os.environ else "leia-schemata"
 
 
 def activate(collection):
