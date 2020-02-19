@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from typing import Union
-import schema.management
+import repo.management
 
 
 def mockSchema(
@@ -55,7 +55,7 @@ def mockSchema(
 
     if save:
         if collection is None:
-            collection = schema.management.handle()
+            collection = repo.management.handle()
         collection.insert_one(entry)
         del entry["_id"]
 
