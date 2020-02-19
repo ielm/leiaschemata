@@ -7,7 +7,7 @@ from os.path import join
 from pymongo import MongoClient
 
 ARCHIVE_PATH = "ARCHIVE_PATH"
-SCHEMA_ACTIVE = "SCHEMA_ACTIVE"
+REPO_ACTIVE = "REPO_ACTIVE"
 
 MONGO_HOST = os.environ[
     "MONGO_HOST"] if "MONGO_HOST" in os.environ else "localhost"
@@ -18,11 +18,11 @@ DATABASE = os.environ[
 
 
 def activate(collection):
-    os.environ[SCHEMA_ACTIVE] = collection
+    os.environ[REPO_ACTIVE] = collection
 
 
 def active():
-    return os.environ[SCHEMA_ACTIVE] if SCHEMA_ACTIVE in os.environ else None
+    return os.environ[REPO_ACTIVE] if REPO_ACTIVE in os.environ else None
 
 
 def getclient():
@@ -90,13 +90,13 @@ def publish_archive(name):
     path = path + "/" + name + ".gz"
 
     s3 = boto3.resource('s3')
-    s3.Object("leia-schema-repository",
+    s3.Object("leia-schemata-repository",
               name + ".gz").put(Body=open(path, 'rb'))
 
 
 def list_remote_archives():
     s3 = boto3.resource('s3')
-    bucket = s3.Bucket("leia-schema-repository")
+    bucket = s3.Bucket("leia-schemata-repository")
 
     return map(lambda object: object.key.replace(".gz", ""),
                bucket.objects.all())
@@ -111,7 +111,7 @@ def download_archive(name):
     path = path + "/" + name + ".gz"
 
     s3 = boto3.resource('s3')
-    s3.Bucket("leia-schema-repository").download_file(name + ".gz", path)
+    s3.Bucket("leia-schemata-repository").download_file(name + ".gz", path)
 
 
 def collection_to_file(collection, path):
