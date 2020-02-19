@@ -1,4 +1,4 @@
-from schema.api import SchemaAPI
+from repo.api import SchemaAPI
 from pymongo import MongoClient
 from collections import OrderedDict
 from tests.TestUtils import mockSchema
@@ -8,11 +8,11 @@ import unittest
 
 class SchemaAPITestCase(unittest.TestCase):
     def setUp(self):
-        import schema.management
+        import repo.management
         import os
 
-        schema.management.DATABASE = "unittest"
-        os.environ[schema.management.SCHEMA_ACTIVE] = "unittest"
+        repo.management.DATABASE = "unittest"
+        os.environ[repo.management.REPO_ACTIVE] = "unittest"
 
     def tearDown(self):
         MONGO_HOST = "localhost"
@@ -41,6 +41,17 @@ class SchemaAPITestCase(unittest.TestCase):
             "MY_SCHEMA-REQ_ACT1": sense1,
             "MY_SCHEMA-REQ_ACT2": sense3
         })
+
+    def test_get_cat(self):
+        sense1 = mockSchema("MY_SCHEMA-REQ_ACT1")
+        sense2 = mockSchema("MY_SCHEMA-REQ_INFO1")
+
+        schema = SchemaAPI().get_cat("REQ_ACT")
+
+        self.assertEqual(schema, {
+            "MY_SCHEMA-REQ_ACT1": sense1
+            })
+
 
     def test_list_senses(self):
         sense1 = mockSchema("MY_SCHEMA-REQ_ACT1")
