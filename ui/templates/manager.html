@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Schema Repository Management</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+
+    <style>
+        .tooltip {
+            pointer-events: none;
+        }
+        .help-badge {
+            cursor: default;
+        }
+        #main > .card {
+            margin-bottom: 20px;
+        }
+    </style>
+
+    <script>
+        jQuery(function () {
+            jQuery('[data-toggle="tooltip"]').tooltip()
+
+            jQuery('#copyModal').on('show.bs.modal', function (event) {
+                var button = jQuery(event.relatedTarget);
+                var repo = button.data('repo');
+                var modal = jQuery(this);
+                modal.find('#repo-old-name').val(repo);
+            });
+
+            jQuery('#renameModal').on('show.bs.modal', function (event) {
+                var button = jQuery(event.relatedTarget);
+                var repo = button.data('repo');
+                var modal = jQuery(this);
+                modal.find('#repo-old-name').val(repo);
+            });
+
+            jQuery('#archiveModal').on('show.bs.modal', function (event) {
+                var button = jQuery(event.relatedTarget);
+                var repo = button.data('repo');
+                var modal = jQuery(this);
+                modal.find('#repo-old-name').val(repo);
+                modal.find('#repo-new-name').val(repo);
+            });
+
+            jQuery('#deleteModal').on('show.bs.modal', function (event) {
+                var button = jQuery(event.relatedTarget);
+                var repo = button.data('repo');
+                var modal = jQuery(this);
+                modal.find('#repo-old-name').val(repo);
+            });
+
+            jQuery('#deleteArchiveModal').on('show.bs.modal', function (event) {
+                var button = jQuery(event.relatedTarget);
+                var repo = button.data('repo');
+                var modal = jQuery(this);
+                modal.find('#repo-old-name').val(repo);
+            });
+
+        });
+
+    </script>
+
+</head>
+<body>
+
+    {% include 'nav.html' %}
+    <script>
+        $(document).ready(function() {
+            $("#nav-manage").addClass("active");
+        });
+    </script>
+
+    <div id="main" class="container">
+        <h1>Schema Repository Management</h1>
+
+        {% if payload["message"] %}
+            <div class="alert alert-primary" role="alert">
+                {{ payload["message"] }}
+            </div>
+        {% endif %}
+        {% if payload["error"] %}
+            <div class="alert alert-danger" role="alert">
+                {{ payload["error"] }}
+            </div>
+        {% endif %}
+
+        <p class="lead">
+            Active Repository: <strong>{{ payload["active"] }}</strong>
+        </p>
+
+        <div class="card">
+            <h5 class="card-header">Installed Repositories</h5>
+            <div class="card-body">
+
+                <p>
+                    The following repositories have been installed into your database, and are available to be edited, or
+                    used by the generator, or any other consuming agent.  This service will only operate on the repository
+                    marked <strong>active</strong>.  To use a different repository, make it active (or start a separate
+                    service).
+                </p>
+
+                <table class="table table-sm">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Activate <span class="help-badge badge badge-pill badge-info" data-toggle="tooltip" data-placement="right" title="The active repository will be used by all consumers of the service on this machine.  Use the [Activate] option to switch between installed repositories.">?</span></th>
+                            <th scope="col">Copy <span class="help-badge badge badge-pill badge-info" data-toggle="tooltip" data-placement="right" title="Make a copy of the selected repository.  You will be prompted to enter a new name.  The copy will be installed immediately.">?</span></th>
+                            <th scope="col">Rename <span class="help-badge badge badge-pill badge-info" data-toggle="tooltip" data-placement="right" title="Rename an installed repository.">?</span></th>
+                            <th scope="col">Archive <span class="help-badge badge badge-pill badge-info" data-toggle="tooltip" data-placement="right" title="Export the selected repository to a local archive file.  You will be prompted to enter a new name.">?</span></th>
+                            <th scope="col">Delete <span class="help-badge badge badge-pill badge-info" data-toggle="tooltip" data-placement="right" title="Delete the repository from your database.  This will not affect any local or remote copies of the repository.">?</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for installed in payload["installed"] %}
+                            <tr>
+                                <th scope="row">{{ installed }}</th>
+                                <td>
+                                    {% if installed == payload["active"] %}
+                                        <em>active</em>
+                                    {% else %}
+                                        <form action="/repo/manage/activate" method="post">
+                                            <button class="btn btn-sm btn-success" name="repository" value="{{ installed }}">Activate</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#copyModal" data-lexicon="{{ installed }}">
+                                        Copy
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#renameModal" data-repo="{{ installed }}">
+                                        Rename
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#archiveModal" data-repo="{{ installed }}">
+                                        Archive
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal" data-repo="{{ installed }}">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h5 class="card-header">Local Repository Archives</h5>
+            <div class="card-body">
+
+                <p>
+                    The following repository archives are located in your volume, and can be installed into your database.
+                    These archives cannot be used by consumers of the service, or edited, until they are installed
+                    (and made active).  Your repository file volume is {{ payload["local-volume"] }}.
+                </p>
+
+                <table class="table table-sm">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Install <span class="help-badge badge badge-pill badge-info" data-toggle="tooltip" data-placement="right" title="Install the repository file into the database so it can be used and edited.  The same repository (by id) cannot be installed twice.">?</span></th>
+                            <th scope="col">Publish <span class="help-badge badge badge-pill badge-info" data-toggle="tooltip" data-placement="right" title="Publish the repository archive to the remote repository.  The same repository (by id) cannot be published twice.">?</span></th>
+                            <th scope="col">Delete <span class="help-badge badge badge-pill badge-info" data-toggle="tooltip" data-placement="right" title="Delete the local repository archive.  This will not affect installed repositories or remote repositories.">?</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for local in payload["local"] %}
+                            <tr>
+                                <th scope="row">{{ local }}</th>
+                                <td>
+                                    {% if local in payload["installed"] %}
+                                        <button class="btn btn-sm btn-secondary" disabled>Install</button>
+                                    {% else %}
+                                        <form action="manage/local/install" method="post">
+                                            <button class="btn btn-sm btn-primary" name="repository" value="{{ local }}">Install</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if local in payload["remote"] %}
+                                        <button class="btn btn-sm btn-secondary" disabled>Publish</button>
+                                    {% else %}
+                                        <form action="manage/local/publish" method="post">
+                                            <button class="btn btn-sm btn-warning" name="repository" value="{{ local }}">Publish</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteArchiveModal" data-repo="{{ local }}">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h5 class="card-header">Remote Repository Archives</h5>
+            <div class="card-body">
+                <p>
+                    The following repository archives are available in the remote repository.  Download any of them to put the
+                    repository archive into your local volume.  From there, the file can be installed into your database, and then
+                    made active.
+                </p>
+                <table class="table table-sm">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Download <span class="help-badge badge badge-pill badge-info" data-toggle="tooltip" data-placement="right" title="Download a repository archive into the local volume.  Downloading a repository does not affect your local database until it is installed.">?</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for remote in payload["remote"] %}
+                            <tr>
+                                <th scope="row">{{ remote }}</th>
+                                <td>
+                                    {% if remote in payload["local"] %}
+                                        <button class="btn btn-sm btn-secondary" disabled>Download</button>
+                                    {% else %}
+                                        <form action="manage/remote/download" method="post">
+                                            <button class="btn btn-sm btn-primary" name="repository" value="{{ remote }}">Download</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="copyModal" tabindex="-1" role="dialog" aria-labelledby="copyModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="copyModalTitle">Copy Repository</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="copyForm" action="/repo/manage/copy" method="post">
+                        <div class="form-group">
+                            <label for="repo-old-name" class="col-form-label">Repository to Copy:</label>
+                            <input type="text" class="form-control" id="repo-old-name" name="repository" value="" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="repo-new-name" class="col-form-label">New ID:</label>
+                            <input type="text" class="form-control" id="repo-new-name" name="name">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="copyForm">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="renameModal" tabindex="-1" role="dialog" aria-labelledby="renameModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renameModalTitle">Rename Repository</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="renameForm" action="/repo/manage/rename" method="post">
+                        <div class="form-group">
+                            <label for="repo-old-name" class="col-form-label">Repository to Rename:</label>
+                            <input type="text" class="form-control" id="repo-old-name" name="repository" value="" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="repo-new-name" class="col-form-label">New ID:</label>
+                            <input type="text" class="form-control" id="repo-new-name" name="name">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="renameForm">Rename</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="archiveModal" tabindex="-1" role="dialog" aria-labelledby="archiveModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="archiveModalTitle">Archive Repository</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="archiveForm" action="/repo/manage/archive" method="post">
+                        <div class="form-group">
+                            <label for="repo-old-name" class="col-form-label">Repository to Archive:</label>
+                            <input type="text" class="form-control" id="repo-old-name" name="repository" value="" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="repo-new-name" class="col-form-label">New ID:</label>
+                            <input type="text" class="form-control" id="repo-new-name" name="name" value="">
+                        </div>
+                    </form>
+                    <div class="alert alert-warning" role="alert">
+                        <strong>Warning</strong>: If you archive using the name of an existing local archive, you will overwrite the existing file.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="archiveForm">Archive</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalTitle">Delete Repository</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="deleteForm" action="/repo/manage/delete" method="post">
+                        <div class="form-group">
+                            <label for="repo-old-name" class="col-form-label">Lexicon to Delete:</label>
+                            <input type="text" class="form-control" id="repo-old-name" name="repository" value="" readonly>
+                        </div>
+                    </form>
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Warning</strong>: Deleting a repository will remove it from your database.  It will not be removed from any local or remote archives.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="deleteForm">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteArchiveModal" tabindex="-1" role="dialog" aria-labelledby="deleteArchiveModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteArchiveModalTitle">Delete Archive</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="deleteArchiveForm" action="/repo/manage/local/delete" method="post">
+                        <div class="form-group">
+                            <label for="repo-old-name" class="col-form-label">Archive to Delete:</label>
+                            <input type="text" class="form-control" id="repo-old-name" name="repository" value="" readonly>
+                        </div>
+                    </form>
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Warning</strong>: Deleting a local archive will remove it from your volume.  It will not be removed from the database or remote archives.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="deleteArchiveForm">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
