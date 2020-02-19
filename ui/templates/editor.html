@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Schema Repository</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/ace.js"></script>
+
+    <style>
+        .senses-list {
+            max-height: 700px;
+            overflow: scroll;
+            width: 100%;
+        }
+        .list-group-item.sense {
+            padding: .25rem .75rem;
+        }
+        .sense > .name {
+            margin-bottom: 0px;
+        }
+        .sense > .def {
+            margin-bottom: 0px;
+        }
+        .sense-editor {
+            margin-bottom: 20px;
+        }
+
+        #sense-editor-template {
+            visibility: hidden;
+        }
+
+        #status-alert-template {
+            visibility: hidden;
+        }
+    </style>
+
+    <script>
+        var page = {{ page }};
+    </script>
+
+    <script>
+        function name() {
+            var name = $("#namesearch").val();
+            if (name == "") {
+                name = "*";
+            }
+            return name.toUpperCase();
+        }
+
+        function search() {
+            $.ajax("/repo/api/search?name=" + name() + "&page=" + page + "&include=DEF").done(function(msg) {
+                var senses = JSON.parse(msg);
+                loadList(senses);
+            });
+        }
+
+        function loadList(senses) {
+            $("#senselist").empty();
+            for (s in senses) {
+                var sense = senses[s];
+
+                var li = $("<a href='#'></a>")
+                    .addClass("list-group-item")
+                    .addClass("list-group-item-action")
+                    .addClass("sense")
+                    .data("sense", sense.SENSE);
+                var name = $("<p></p>").addClass("name").text(sense.SENSE);
+                var def = $("<p></p>").addClass("def").append($("<small></small>").text(sense.DEF));
+
+                name.appendTo(li);
+                def.appendTo(li);
+                li.appendTo('#senselist');
+            }
+        }
+
+        function get(sense) {
+            $.ajax("/repo/api/sense?sense=" + sense).done(function(msg) {
+                var sense = msg;   //JSON.parse(msg);
+                loadSense(sense);
+            });
+        }
+
+        function loadSense(raw_sense) {
+            var editor = $("#sense-editor-template").clone();
+            editor.removeAttr("id");
+
+            $("#editors-column").append(editor);
+
+            var sense = JSON.parse(raw_sense);
+
+            editor.attr("id", "sense-editor-for-" + hash(sense.SENSE));     // We have to hash here as some of the SENSE ids don't play well with jQuery
+            $(editor.find(".sense-label")[0]).text(sense.SENSE);
+            $(editor.find(".save-editor")[0]).data("sense", sense.SENSE);
+            $(editor.find(".delete-editor")[0]).data("sense", sense.SENSE);
+            $(editor.find(".editor")[0]).text(JSON.stringify(sense, null, 2));
+
+            var editor = ace.edit(editor.find(".editor")[0], {
+                mode: "ace/mode/json",
+                maxLines: 1000000,
+                wrap: true,
+                autoScrollEditorIntoView: true
+            });
+        }
+
+        function showAlert(message) {
+            var alert = $("#status-alert-template").clone();
+            alert.removeAttr("id");
+            $(alert.find(".message")[0]).text(message);
+
+            $("#alert-container").append(alert);
+        }
+
+        function save(sense) {
+            $.ajax({
+                type: "POST",
+                url: "/repo/edit/save/" + JSON.parse(sense)["SENSE"],
+                data: sense,
+                statusCode: {
+                    200: function() {
+                        showAlert("Successfully saved " + JSON.parse(sense)["SENSE"] + ".");
+                    }
+                },
+                contentType: "application/json; charset=utf-8",
+                dataType: "json"
+            });
+        }
+
+        function del(sense) {
+            $.ajax({
+                type: "POST",
+                url: "/repo/edit/delete/" + sense,
+                statusCode: {
+                    200: function(msg) {
+                        var editor = $("#sense-editor-for-" + hash(sense));
+                        editor.remove();
+                        search();
+                        showAlert("Successfully deleted " + sense + ".");
+                    }
+                }
+            });
+        }
+
+    </script>
+
+    <script>
+        $(document).ready(function() {
+
+            $("#namesearch").on("keyup", function() {
+                page = 0;
+                search();
+            });
+
+            $("#next").on("click", function() {
+                page = page + 1;
+                search();
+            });
+
+            $("#prev").on("click", function() {
+                page = page - 1;
+                if (page < 0) return;
+
+                search();
+            });
+
+            $("#new-button").on("click", function() {
+                var sense = {
+                    "SENSE": "",
+                    "DEF": "",
+                    "EX": "",
+                    "COMMENTS": "",
+                    "SYN-STRUC": {},
+                    "SEM-STRUC": {},
+                    "MEANING-PROCEDURES": "NIL",
+                };
+                loadSense(JSON.stringify(sense));
+            });
+
+            $("#delete-modal").on("show.bs.modal", function(event) {
+                var button = $(event.relatedTarget);
+                var sense = button.data("sense");
+
+                var modal = $(this)
+                modal.find(".modal-title").text("Delete " + sense + "?");
+                $("#delete-modal-message").text("Are you sure you want to delete " + sense + "?");
+                $("#delete-modal-confirm").data("sense", sense);
+            });
+
+            $("#delete-modal-confirm").on("click", function(event) {
+                var button = $("#delete-modal-confirm");
+                var sense = button.data("sense");
+                del(sense);
+            });
+
+            $(document).on("click", "a.sense", function(event) {
+                var a = $(event.target).closest("a")[0];
+                var sense = $(a).data("sense");
+                get(sense);
+            });
+
+            $(document).on("click", ".save-editor", function(event) {
+                var editor = $(event.target).closest(".sense-editor")[0];
+                var content = ace.edit($(editor).find(".editor")[0]).getValue();
+
+                save(content);
+            });
+
+            $(document).on("click", ".close-editor", function(event) {
+                var editor = $(event.target).closest(".sense-editor")[0];
+                editor.remove();
+            });
+
+        });
+    </script>
+
+    <script>
+        function hash(s) {
+            var a = 1, c = 0, h, o;
+            if (s) {
+                a = 0;
+
+                for (h = s.length - 1; h >= 0; h--) {
+                    o = s.charCodeAt(h);
+                    a = (a<<6&268435455) + o + (o<<14);
+                    c = a & 266338304;
+                    a = c!==0?a^c>>21:a;
+                }
+            }
+            return String(a);
+        };
+    </script>
+
+</head>
+<body>
+
+    {% include 'nav.html' %}
+    <script>
+        $(document).ready(function() {
+            $("#nav-view").addClass("active");
+        });
+    </script>
+
+    <div class="container">
+        <h1>
+            Schema Editor
+
+            {% if env.editing %}
+                <button id="new-button" style="margin-top: 10px" type="button" class="btn btn-sm btn-success float-right">New</button>
+            {% endif %}
+        </h1>
+
+        <div id="alert-container"></div>
+
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="search-addon">Search</span>
+                    </div>
+                    <input id="namesearch" type="text" class="form-control" placeholder="Sense" aria-label="Sense" aria-describedby="search-addon">
+                </div>
+                <ul id="senselist" class="list-group senses-list">
+                    {% for s in senses %}
+                        <a href="#" data-sense="{{ s.SENSE }}" class="list-group-item list-group-item-action sense">
+                            <p class="name">{{ s.SENSE }}</p>
+                            <p class="def"><small>{{ s.DEF }}</small></p>
+                        </a>
+                    {% endfor %}
+                </ul>
+                <div class="btn-group" role="group">
+                    <button id="prev" type="button" class="btn btn-secondary">Prev</button>
+                    <button id="next" type="button" class="btn btn-secondary">Next</button>
+                </div>
+            </div>
+            <div id="editors-column" class="col">
+
+            </div>
+        </div>
+    </div>
+
+    <div id="status-alert-template" class="alert alert-success alert-dismissible fade show" role="alert">
+        <p class="message"></p>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div id="sense-editor-template" class="card sense-editor">
+        <div class="card-header">
+            <span class="sense-label">Lexicon Sense</span>
+            <div class="float-right">
+                {% if env.editing %}
+                    <a href="#" class="btn btn-primary btn-sm save-editor" data-sense="">Save</a>
+                    <a href="#" class="btn btn-danger btn-sm delete-editor" data-toggle="modal" data-target="#delete-modal" data-sense="">Delete</a>
+                {% endif %}
+
+                <a href="#" class="btn btn-secondary btn-sm close-editor">Close</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="editor"></div>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="delete-modal-message">Modal body text goes here.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="delete-modal-confirm" type="button" class="btn btn-danger" data-sense="" data-dismiss="modal">Delete</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
