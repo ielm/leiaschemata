@@ -1,0 +1,59 @@
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top">
+    <ul class="navbar-nav">
+        <li id="nav-brand" class="nav-item">
+            <a class="navbar-brand" href="#">Schema Repository</a>
+        </li>
+        <li id="nav-view" class="nav-item">
+            <a class="nav-link" href="/repo/view">View</a>
+        </li>
+        <li id="nav-manage" class="nav-item">
+            <a class="nav-link" href="/repo/manage">Manage</a>
+        </li>
+    </ul>
+    <ul class="navbar-nav ml-auto">
+        <li id="active-repo" class="nav-item">
+            {{ env.active_repo }}
+        </li>
+        {% if env.editing_enabled %}
+            <li id="toggle-edit-button" class="nav-item">
+                {% if env.editing %}
+                    <i class="fas fa-unlock fa-2x"></i>
+                {% else %}
+                    <i class="fas fa-lock fa-2x"></i>
+                {% endif %}
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+<style>
+    #active-repo {
+        color: white;
+        margin-right: 10px;
+        margin-top: 5px;
+    }
+    #toggle-edit-button > .fas {
+        color: rgba(255,255,255,.5);
+        cursor: pointer;
+    }
+    #toggle-edit-button > .fas:hover {
+        color: rgba(255,255,255,.75);
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        $("#toggle-edit-button").on("click", function() {
+            $.ajax({
+                url: "/repo/view/toggle/editing",
+                method: "GET",
+            }).done(function(data) {
+                location.reload();
+            }).fail(function(error) {
+                console.log(error);
+            });
+        });
+    });
+</script>
+
+<div style="margin-top: 75px;"></div>
