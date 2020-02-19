@@ -1,10 +1,10 @@
-import schema.management
+import repo.management
 from typing import Union, List
 
 
 class SchemaAPI:
     def __init__(self):
-        self.collection = schema.management.handle()
+        self.collection = repo.management.handle()
 
     def get_schema(self, tag: str, cat: Union[None, str] = None) -> dict:
         schema_filter = {"$or": [{"TAG": tag}]}
@@ -25,6 +25,24 @@ class SchemaAPI:
             out[r["SENSE"]] = r
 
         return out
+
+    def get_cat(self, cat: str, tag: Union[None, str]=None) -> dict:
+        schema_filter = {"$match": {"CAT": cat}}
+
+        sort = {"$sort": {"SENSE": 1}}
+
+        results = list(self.collection.aggregate([schema_filter, sort]))
+
+        if len(results) == 0:
+            raise Exception(f"Unknown speech act {cat}.")
+
+        out = {}
+        for r in results:
+            del r["_id"]
+            out[r["SENSE"]] = r
+
+        return out
+
 
     def list_senses(self, tag: str) -> List[dict]:
         match = {"$match": {"TAG": tag}}
@@ -49,6 +67,8 @@ class SchemaAPI:
         del entry["_id"]
 
         return entry
+
+
 
     def search(self,
                partial_name: str,
