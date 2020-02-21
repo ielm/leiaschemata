@@ -21,4 +21,4 @@ ENV AWS_SECRET_ACCESS_KEY ???
 
 VOLUME /app/archives
 
-CMD ["python", "-m", "repo.service"]
+CMD ["python", "-m", "schema.service"]

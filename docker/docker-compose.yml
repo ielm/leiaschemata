@@ -26,7 +26,7 @@ services:
     command:
       - "python"
       - "-m"
-      - "repo.service"
+      - "schema.service"
       - "host=0.0.0.0"
     environment:
       - ARCHIVE_PATH=/app/archives
