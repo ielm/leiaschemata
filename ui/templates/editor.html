@@ -54,7 +54,7 @@
         }
 
         function search() {
-            $.ajax("/repo/api/search?name=" + name() + "&page=" + page + "&include=DEF").done(function(msg) {
+            $.ajax("/schema/api/search?name=" + name() + "&page=" + page + "&include=DEF").done(function(msg) {
                 var senses = JSON.parse(msg);
                 loadList(senses);
             });
@@ -80,7 +80,7 @@
         }
 
         function get(sense) {
-            $.ajax("/repo/api/sense?sense=" + sense).done(function(msg) {
+            $.ajax("/schema/api/sense?sense=" + sense).done(function(msg) {
                 var sense = msg;   //JSON.parse(msg);
                 loadSense(sense);
             });
@@ -119,7 +119,7 @@
         function save(sense) {
             $.ajax({
                 type: "POST",
-                url: "/repo/edit/save/" + JSON.parse(sense)["SENSE"],
+                url: "/schema/edit/save/" + JSON.parse(sense)["SENSE"],
                 data: sense,
                 statusCode: {
                     200: function() {
@@ -134,7 +134,7 @@
         function del(sense) {
             $.ajax({
                 type: "POST",
-                url: "/repo/edit/delete/" + sense,
+                url: "/schema/edit/delete/" + sense,
                 statusCode: {
                     200: function(msg) {
                         var editor = $("#sense-editor-for-" + hash(sense));

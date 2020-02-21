@@ -4,10 +4,10 @@
             <a class="navbar-brand" href="#">Schema Repository</a>
         </li>
         <li id="nav-view" class="nav-item">
-            <a class="nav-link" href="/repo/view">View</a>
+            <a class="nav-link" href="/schema/view">View</a>
         </li>
         <li id="nav-manage" class="nav-item">
-            <a class="nav-link" href="/repo/manage">Manage</a>
+            <a class="nav-link" href="/schema/manage">Manage</a>
         </li>
     </ul>
     <ul class="navbar-nav ml-auto">
@@ -45,7 +45,7 @@
     $(document).ready(function() {
         $("#toggle-edit-button").on("click", function() {
             $.ajax({
-                url: "/repo/view/toggle/editing",
+                url: "/schema/view/toggle/editing",
                 method: "GET",
             }).done(function(data) {
                 location.reload();

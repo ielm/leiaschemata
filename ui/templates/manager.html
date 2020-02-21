@@ -122,7 +122,7 @@
                                     {% if installed == payload["active"] %}
                                         <em>active</em>
                                     {% else %}
-                                        <form action="/repo/manage/activate" method="post">
+                                        <form action="/schema/manage/activate" method="post">
                                             <button class="btn btn-sm btn-success" name="repository" value="{{ installed }}">Activate</button>
                                         </form>
                                     {% endif %}
@@ -253,7 +253,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="copyForm" action="/repo/manage/copy" method="post">
+                    <form id="copyForm" action="/schema/manage/copy" method="post">
                         <div class="form-group">
                             <label for="repo-old-name" class="col-form-label">Repository to Copy:</label>
                             <input type="text" class="form-control" id="repo-old-name" name="repository" value="" readonly>
@@ -282,7 +282,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="renameForm" action="/repo/manage/rename" method="post">
+                    <form id="renameForm" action="/schema/manage/rename" method="post">
                         <div class="form-group">
                             <label for="repo-old-name" class="col-form-label">Repository to Rename:</label>
                             <input type="text" class="form-control" id="repo-old-name" name="repository" value="" readonly>
@@ -311,7 +311,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="archiveForm" action="/repo/manage/archive" method="post">
+                    <form id="archiveForm" action="/schema/manage/archive" method="post">
                         <div class="form-group">
                             <label for="repo-old-name" class="col-form-label">Repository to Archive:</label>
                             <input type="text" class="form-control" id="repo-old-name" name="repository" value="" readonly>
@@ -343,7 +343,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="deleteForm" action="/repo/manage/delete" method="post">
+                    <form id="deleteForm" action="/schema/manage/delete" method="post">
                         <div class="form-group">
                             <label for="repo-old-name" class="col-form-label">Lexicon to Delete:</label>
                             <input type="text" class="form-control" id="repo-old-name" name="repository" value="" readonly>
@@ -371,7 +371,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="deleteArchiveForm" action="/repo/manage/local/delete" method="post">
+                    <form id="deleteArchiveForm" action="/schema/manage/local/delete" method="post">
                         <div class="form-group">
                             <label for="repo-old-name" class="col-form-label">Archive to Delete:</label>
                             <input type="text" class="form-control" id="repo-old-name" name="repository" value="" readonly>
