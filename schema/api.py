@@ -1,10 +1,10 @@
-import repo.management
-from typing import Union, List
+import schema.management
+from typing import Union, List, Dict
 
 
 class SchemaAPI:
     def __init__(self):
-        self.collection = repo.management.handle()
+        self.collection = schema.management.handle()
 
     def get_schema(self, tag: str, cat: Union[None, str] = None) -> dict:
         schema_filter = {"$or": [{"TAG": tag}]}
@@ -26,12 +26,23 @@ class SchemaAPI:
 
         return out
 
-    def get_cat(self, cat: str, tag: Union[None, str]=None) -> dict:
-        schema_filter = {"$match": {"CAT": cat}}
+    def get_cat(self, cat: str, constraints: Union[Dict[str, str], None]=None) -> dict:
+        cat_filter = {"$match": {"CAT": cat}}
+
+        # filter = {
+        #     "$and": [cat_filter]
+        # }
+
+        # if constraints is not False:
+        #     for key in constraints.keys():
+        #         if key.upper() not in ["SEM-STRUC", "SYN-STRUC"]:
+        #             filter["$and"].append({f"{key.upper()}": constraints[key].upper()})
+                    
+        #     pass
 
         sort = {"$sort": {"SENSE": 1}}
 
-        results = list(self.collection.aggregate([schema_filter, sort]))
+        results = list(self.collection.aggregate([cat_filter, sort]))
 
         if len(results) == 0:
             raise Exception(f"Unknown speech act {cat}.")
@@ -42,7 +53,6 @@ class SchemaAPI:
             out[r["SENSE"]] = r
 
         return out
-
 
     def list_senses(self, tag: str) -> List[dict]:
         match = {"$match": {"TAG": tag}}
@@ -67,8 +77,6 @@ class SchemaAPI:
         del entry["_id"]
 
         return entry
-
-
 
     def search(self,
                partial_name: str,
