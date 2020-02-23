@@ -57,7 +57,7 @@
                 var button = jQuery(event.relatedTarget);
                 var repo = button.data('repo');
                 var modal = jQuery(this);
-                modal.find('#repo-old-name').val(repo);
+                modal.find('#schema-old-name').val(repo);
             });
 
         });
@@ -256,7 +256,7 @@
                     <form id="copyForm" action="/schema/manage/copy" method="post">
                         <div class="form-group">
                             <label for="repo-old-name" class="col-form-label">Repository to Copy:</label>
-                            <input type="text" class="form-control" id="repo-old-name" name="repository" value="" readonly>
+                            <input type="text" class="form-control" id="repo-old-name" name="repository" value="" {# readonly #}>
                         </div>
                         <div class="form-group">
                             <label for="repo-new-name" class="col-form-label">New ID:</label>
