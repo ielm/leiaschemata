@@ -193,6 +193,7 @@ def manage_activate():
 
     return redirect("/schema/manage")
 
+
 @app.route("/schema/manage/copy", methods=["POST"])
 def manage_copy():
 
@@ -208,6 +209,7 @@ def manage_copy():
     message = f"Copied {repo} to {name}."
     return redirect("/schema/manage?message=" + message)
 
+
 @app.route("/schema/manage/rename", methods=["POST"])
 def manage_rename():
 
@@ -222,6 +224,7 @@ def manage_rename():
 
     message = f"Renamed {repo} to {name}."
     return redirect("/schema/manage?message=" + message)
+
 
 @app.route("/schema/manage/archive", methods=["POST"])
 def manage_archive():
@@ -257,6 +260,7 @@ def manage_archive():
     message = "Archived " + repo + " to " + filename + "."
     return redirect("/schema/manage?message=" + message)
 
+
 @app.route("/schema/manage/delete", methods=["POST"])
 def manage_delete():
 
@@ -270,6 +274,7 @@ def manage_delete():
 
     message = "Deleted " + repo + " from the database."
     return redirect("/schema/manage?message=" + message)
+
 
 @app.route("/schema/manage/local/install", methods=["POST"])
 def manage_local_install():
@@ -292,6 +297,7 @@ def manage_local_install():
     message = "Installed " + repo + "."
     return redirect("/schema/manage?message=" + message)
 
+
 @app.route("/schema/manage/local/publish", methods=["POST"])
 def manage_local_publish():
 
@@ -306,6 +312,7 @@ def manage_local_publish():
     message = "Published " + repo + "."
     return redirect("/schema/manage?message=" + message)
 
+
 @app.route("/schema/manage/local/delete", methods=["POST"])
 def manage_local_delete():
 
@@ -319,6 +326,7 @@ def manage_local_delete():
 
     message = "Deleted archive " + repo + "."
     return redirect("/schema/manage?message=" + message)
+
 
 @app.route("/schema/manage/remote/download", methods=["POST"])
 def manage_remote_download():
