@@ -1,3 +1,7 @@
+--extra-index-url https://pypi.trulysmartagents.org/
+
+OntoGraph
+OntoAgent
 Flask==1.0.2
 Flask-Cors==3.0.7
 Flask-SocketIO==3.3.1
