@@ -8,3 +8,5 @@ __pychache__
 LEIASchemata.egg-info/
 dist/
 build/
+
+*.scratch
