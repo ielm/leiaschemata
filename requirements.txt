@@ -2,8 +2,9 @@
 
 OntoGraph
 OntoAgent
-Flask==1.0.2
-Flask-Cors==3.0.7
-Flask-SocketIO==3.3.1
-pymongo==3.6.1
-boto3==1.7.6
+LEIALexicon
+Flask
+Flask-Cors
+Flask-SocketIO
+pymongo
+boto3
