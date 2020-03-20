@@ -28,7 +28,7 @@ def env_payload():
     }
 
 
-### /service/api - routes for query, returning JSON formatted results
+### /schema/api - routes for query, returning JSON formatted results
 
 
 @app.route("/schema/api/sense", methods=["GET"])
