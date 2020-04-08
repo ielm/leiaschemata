@@ -1,9 +1,19 @@
 from ontograph.Frame import Frame
 from ontoagent.engine.signal import Signal, TMR
+from lex.lexicon import Lexicon
 from lex.lexeme import Lexeme
 from typing import List
 from collections import OrderedDict
 from typing import Union
+
+
+# This is a hack for WordCache. 
+# The real one will be implemented as a library in the future. 
+WordCache = {
+    "ACQUIRE": ["GET-V1"],
+    "OBJECT": ["BLOCK-N1"],
+    "HUMAN": ["JAKE-N1"]
+}
 
 
 class Schema(Signal):
@@ -19,27 +29,12 @@ class Schema(Signal):
         s = super().build(root, space=space, anchor=anchor)
         s = Schema(s.anchor)
         s.__build(sdict)
-        # s.__link_tmr(tmr)
+        s.__link_tmr(tmr)
         return s
 
-    def element(self, name: str):
-        try:
-            return self.root()["HEAD"].singleton()
-        except KeyError:
-            print(f"{name} is not defined")
-
-    def elements(self) -> List[Frame]:
-        return list(self.anchor["HAS-ELEMENT"])
-
-    def add_element(self, element: Frame):
-        self.anchor["HAS-ELEMENT"] += element
-        self.add_constituent(element)
-
-    def add_tmr_element(self, element: str, tmr_element: Frame):
-        self.root()[element].singleton()["TMR_ELEMENT"] = tmr_element
-
-    def head(self):
-        return self.root()["HEAD"].singleton()
+    ##############################################################
+    # -----------------------  UTILITIES  ---------------------- #
+    ##############################################################
 
     def debug(self) -> dict:
         out = {}
@@ -65,7 +60,7 @@ class Schema(Signal):
 
     def syn_match(self, candidate: Lexeme, mode: str = "STRICT") -> bool:
         match = False
-        if mode is "STRICT":
+        if mode == "STRICT":
             l_seen = []
             s_seen = []
             for l_elem in candidate.elements():
@@ -82,6 +77,46 @@ class Schema(Signal):
 
     def sem_match(self, candidate: Lexeme, mode: str = "STRICT") -> bool:
         return True
+
+    ##############################################################
+    # -------------------  ELEMENT UTILITIES  ------------------ #
+    ##############################################################
+
+    def element(self, name: str):
+        name = name.upper().strip()
+        try:
+            return self.root()[name].singleton()
+        except KeyError:
+            print(f"{name} is not defined")
+
+    def elements(self) -> List[Frame]:
+        return list(self.anchor["HAS-ELEMENT"])
+
+    def add_element(self, element: Frame):
+        self.anchor["HAS-ELEMENT"] += element
+        self.add_constituent(element)
+
+    def add_tmr_element(self, element: str, tmr_element: Frame):
+        self.root()[element].singleton()["TMR_ELEMENT"] = tmr_element
+
+    def head(self) -> Frame:
+        return self.root()["HEAD"].singleton()
+
+    def subject(self) -> Frame:
+        return self.root()["SUBJECT"].singleton()
+
+    def directobject(self) -> Frame:
+        return self.root()["DIRECTOBJECT"].singleton()
+
+    def tokenize_element(self, element: Frame):
+        if "LEX" in element:
+            l = Lexeme.from_frame(element["LEX"].singleton())
+            return l.anchor["WORD"].singleton()
+            # print(l.debug())
+
+    ##############################################################
+    # -----------------------  INTERNAL  ----------------------- #
+    ##############################################################
 
     def __build(self, content):
 
@@ -121,13 +156,36 @@ class Schema(Signal):
                     e.get_slot("SEM").get_facet(f.type).assign_filler(
                         element_vars[list(f.list())[0]])
 
-    # def __link_tmr(self, tmr: TMR):
-    #     # tmr_elements = list(map(lambda c: c, tmr.constituents()))
-    #     # print(tmr_elements)
-    #     # print(list(map(lambda c: c.debug(), tmr_elements)))
-    #     # seen = []
-    #     # for element in self.constituents():
-    #     #     print(element.debug())
-    #     #     if element.id
-    #     #     pass
-    #     pass
+    def __link_tmr(self, tmr: TMR):
+        def is_speech_act(element: Union[str, Frame]):
+            speech_acts = ["REQUEST_ACTION", "REQUEST_INFO"]
+            s = element.id if isinstance(element, Frame) else element
+            return True if True in list(map(lambda sa: sa in s, speech_acts)) else False
+
+        def get_tmr_element(schema_element: Frame, tmr: TMR):
+            if is_speech_act(schema_element):
+                if tmr.root().id.split(".")[1].replace("-", "_") in schema_element.id:
+                    return tmr.root()
+            elif "SUBJECT" in schema_element.id:
+                return tmr.root()["BENEFICIARY"].singleton()
+            elif "HEAD" in schema_element.id:
+                return tmr.root()["THEME"].singleton()
+            elif "DIRECTOBJECT" in schema_element.id:
+                root = tmr.root()["THEME"].singleton()
+                return root["THEME"].singleton()
+            return None
+
+        for element in self.constituents():
+            tmr_element = get_tmr_element(element, tmr)
+            element["TMR_ELEMENT"] = tmr_element
+            elemid = element["TMR_ELEMENT"].singleton().id.split(".")[1].replace("-", "_")
+            if elemid not in self.root().id:
+                if elemid in WordCache:
+                    wordtag = WordCache[elemid][0]
+                    if '@' in wordtag:
+                        word = Lexeme.from_frame(wordtag)
+                        element["LEX"] = word.anchor
+                    else:
+                        word = Lexeme.build(Lexicon().get_sense(wordtag))
+                        element["LEX"] = word.anchor
+
