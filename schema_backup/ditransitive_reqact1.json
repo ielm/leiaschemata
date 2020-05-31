@@ -1,0 +1,52 @@
+{
+  "SENSE": "DITRANSITIVE-REQUEST_ACTION1",
+  "DEF": "Schema for requesting an action with a ditransitive verb",
+  "EX": "Give me the red block.",
+  "COMMENTS": "",
+  "SYN-STRUC": {
+    "SUBJECT": {
+      "ROOT": "$VAR1",
+      "CAT": "NP",
+      "OPT": "+"
+    },
+    "HEAD": {
+      "ROOT": "$VAR0",
+      "CAT": "V"
+    },
+    "DIRECTOBJECT": {
+      "ROOT": "$VAR2",
+      "CAT": "NP"
+    },
+    "INDIRECTOBJECT": {
+      "ROOT": "$VAR3",
+      "CAT": "NP"
+    }
+  },
+  "SEM-STRUC": {
+    "HEAD": {
+      "EVENT": {
+        "AGENT": {
+          "VALUE": "$VAR1"
+        },
+        "THEME": {
+          "VALUE": "$VAR2"
+        },
+        "BENEFICIARY": {
+          "VALUE": "$VAR3"
+        }
+      }
+    },
+    "SUBJECT": {
+      "HUMAN": {}
+    },
+    "DIRECTOBJECT": {
+      "OBJECT": {}
+    },
+    "INDIRECTOBJECT": {
+      "ROBOT": {}
+    }
+  },
+  "MEANING-PROCEDURES": "NIL",
+  "TAG": "DITRANSITIVE",
+  "CAT": "REQUEST_ACTION"
+}

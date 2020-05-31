@@ -1,0 +1,46 @@
+{
+  "SENSE": "PAST_PARTICIPLE-INFORM1",
+  "DEF": "Schema for informing about an action having occured.",
+  "EX": "We have arrived.",
+  "COMMENTS": "",
+  "SYN-STRUC": {
+    "SUBJECT": {
+      "ROOT": "$VAR1",
+      "CAT": "N"
+    },
+    "AUX": {
+      "ROOT": "$VAR2",
+      "CAT": "AUX",
+      "ROOT-WORD": "HAVE-AUX2",
+      "TENSE": "PRESENT"
+    },
+    "HEAD": {
+      "ROOT": "$VAR0",
+      "CAT": "V",
+      "FORM": "PAST-PARTICIPLE"
+    }
+  },
+  "SEM-STRUC": {
+    "HEAD": {
+      "COME": {
+        "AGENT": {
+          "VALUE": "$VAR1"
+        },
+        "DESTINATION": {
+          "VALUE": "$VAR3"
+        }
+      }
+    },
+    "SUBJECT": {
+      "HUMAN": {}
+    },
+    "AUX": {
+      "ROOT-WORD": {
+        "VALUE": "HAVE-AUX2"
+      }
+    }
+  },
+  "MEANING-PROCEDURES": "NIL",
+  "TAG": "PAST_PARTICIPLE",
+  "CAT": "INFORM"
+}

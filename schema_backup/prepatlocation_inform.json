@@ -1,0 +1,68 @@
+{
+  "SENSE": "PREP_AT_LOCATION-INFORM1",
+  "DEF": "Schema for informing with a <subj verb at obj> structure",
+  "EX": "We have arrived at the pharmacy.",
+  "COMMENTS": "",
+  "SYN-STRUC": {
+    "SUBJECT": {
+      "ROOT": "$VAR1",
+      "CAT": "N"
+    },
+    "AUX": {
+      "ROOT": "$VAR2",
+      "CAT": "AUX",
+      "ROOT-WORD": "HAVE-AUX2",
+      "TENSE": "PRESENT"
+    },
+    "HEAD": {
+      "ROOT": "$VAR0",
+      "CAT": "V"
+    },
+    "PP": {
+      "ROOT-WORD": [
+        "IN-PREP1",
+        "AT-PREP1"
+      ],
+      "ROOT": "$VAR3",
+      "CAT": "PREP"
+    },
+    "OBJECT": {
+      "ROOT": "$VAR4",
+      "CAT": "N"
+    }
+  },
+  "SEM-STRUC": {
+    "HEAD": {
+      "COME": {
+        "AGENT": {
+          "VALUE": "$VAR1"
+        },
+        "DESTINATION": {
+          "VALUE": "$VAR4"
+        }
+      }
+    },
+    "SUBJECT": {
+      "HUMAN": {}
+    },
+    "PP": {
+      "EVENT": {
+        "VALUE": "$VAR0"
+      },
+      "LOCATION": {
+        "VALUE": "$VAR4"
+      }
+    },
+    "OBJECT": {
+      "PLACE": {}
+    },
+    "AUX": {
+      "ROOT-WORD": {
+        "VALUE": "HAVE-AUX2"
+      }
+    }
+  },
+  "MEANING-PROCEDURES": "NIL",
+  "TAG": "PREP_AT_LOCATION",
+  "CAT": "INFORM"
+}

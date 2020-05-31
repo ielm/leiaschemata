@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="LEIASchemata",
-    version="1.0.2",
+    version="1.0.3",
     packages=find_packages(),
 
     install_requires=[
@@ -12,7 +12,7 @@ setup(
         "pymongo==3.6.1",
         "boto3==1.7.6",
     ],
-
+    url="https://bitbucket.org/ielm/leiaschemata/src/master/",
     author="Ivan Leon",
     author_email="leoni@rpi.edu",
     description="LEIA Schema Service and API",

@@ -1,0 +1,58 @@
+{
+  "SENSE": "MODAL_WHERE-REQUEST_INFO1",
+  "DEF": "Schema for requesting information about a location",
+  "EX": "Where do I turn?",
+  "COMMENTS": "",
+  "SYN-STRUC": {
+    "ADV": {
+      "ROOT": "$VAR1",
+      "CAT": "ADV",
+      "ROOT-WORD": "WHERE-ADV1"
+    },
+    "AUX": {
+      "ROOT": "$VAR2",
+      "CAT": "AUX",
+      "ROOT-WORD": "DO-AUX1"
+    },
+    "SUBJECT": {
+      "ROOT": "$VAR3",
+      "CAT": "N"
+    },
+    "HEAD": {
+      "ROOT": "$VAR0",
+      "CAT": "V"
+    }
+  },
+  "SEM-STRUC": {
+    "ADV": {
+      "LOCATION": {
+        "DOMAIN": {
+          "VALUE": "$VAR0"
+        }
+      },
+      "REQUEST-INFO-TRACE": "+"
+    },
+    "AUX": {
+      "MODALITY": {
+        "TYPE": "EPISTEMIC",
+        "VALUE": 1,
+        "SCOPE": {
+          "VALUE": "$VAR0"
+        }
+      }
+    },
+    "SUBJECT": {
+      "HUMAN": {}
+    },
+    "HEAD": {
+      "STEER": {
+        "AGENT": {
+          "VALUE": "$VAR3"
+        }
+      }
+    }
+  },
+  "MEANING-PROCEDURES": "NIL",
+  "TAG": "MODAL_WHERE",
+  "CAT": "REQUEST_INFO"
+}
