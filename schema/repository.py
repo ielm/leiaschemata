@@ -55,7 +55,7 @@ class Repo:
         return self.get_schema(item)
 
     def get_sense(self, sense):
-        results = self.__rget("/schema/api/sense", params={"sense": sense})
+        results = self.__rget("/repo/api/sense", params={"sense": sense})
         return json.loads(results, object_pairs_hook=OrderedDict)
 
     def get_schema(self, tag, cat=None):
@@ -63,7 +63,7 @@ class Repo:
         if cat is not None:
             params["cat"] = cat
 
-        results = self.__rget("/schema/api/schema", params=params)
+        results = self.__rget("/repo/api/schema", params=params)
         return json.loads(results, object_pairs_hook=OrderedDict)
 
     def get_cat(self, cat, tag=None):
@@ -71,13 +71,13 @@ class Repo:
         if tag is not None:
             params["tag"] = tag
 
-        results = self.__rget("/schema/api/cat", params=params)
+        results = self.__rget("/repo/api/cat", params=params)
         return json.loads(results, object_pairs_hook=OrderedDict)
 
     def list_senses(self, tag):
-        results = self.__rget("/schema/api/list", params={"tag": tag})
+        results = self.__rget("/repo/api/list", params={"tag": tag})
         return json.loads(results)
 
     def search(self, name):
-        results = self.__rget("/schema/api/search", params={"name": name})
+        results = self.__rget("/repo/api/search", params={"name": name})
         return json.loads(results, object_pairs_hook=OrderedDict)

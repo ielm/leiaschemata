@@ -7,12 +7,11 @@ from collections import OrderedDict
 from typing import Union
 from pprint import pprint
 
-# This is a hack for WordCache. 
-# The real one will be implemented as a library in the future. 
+
 WordCache = {
     "ACQUIRE": ["GET-V1"],
     "OBJECT": ["BLOCK-N1"],
-    "HUMAN": ["JAKE-N1"],
+    "HUMAN": ["JAKE"],
     "COME": ["ARRIVE-V1"],
     "STEER": ["TURN-V27"]
 }
@@ -34,9 +33,7 @@ class Schema(Signal):
         s.__link_tmr(tmr)
         return s
 
-    ##############################################################
     # -----------------------  UTILITIES  ---------------------- #
-    ##############################################################
 
     def debug(self) -> dict:
         out = {}
@@ -60,14 +57,10 @@ class Schema(Signal):
                     lex_candidates.append(candidate)
         return lex_candidates
 
-    # TODO - FIGURE OUT HOW TO DISREGARD PP ELEMENT IN SCHEMA
+
     def syn_match(self, candidate: Lexeme, mode: str = "STRICT") -> bool:
         match = False
-        # print("\n\n\n")
-        # print(candidate.word())
-        # print(candidate.debug())
-        # print(self.debug())
-        IGNORE = ["AUX", "ADV"]  # this is a hack, do this correctly in the future
+        IGNORE = ["AUX", "ADV"]
         if mode == "STRICT":
             l_seen = []
             s_seen = []
@@ -78,23 +71,16 @@ class Schema(Signal):
                     if (s_id == "HEAD" and l_id == "ROOT") or s_id == l_id:
                         s_seen.append(s_elem)
                         l_seen.append(l_elem)
-            # print([l.id for l in l_seen])
-            # print([l.id for l in candidate.elements() if l.id.split('.')[1] not in IGNORE])
-            # print([s.id for s in s_seen])
-            # print([s.id for s in self.elements() if s.id.split('.')[1] not in IGNORE])
 
             if not list(set([s.id for s in self.elements() if s.id.split('.')[1] not in IGNORE]) - set(s_seen)) and \
-                    not list(set([l.id for l in candidate.elements() if l.id.split('.')[1] not in IGNORE]) - set(l_seen)):  # TODO - What does this do?
+                    not list(set([l.id for l in candidate.elements() if l.id.split('.')[1] not in IGNORE]) - set(l_seen)):
                 match = True
-        # print(match)
         return match
 
     def sem_match(self, candidate: Lexeme, mode: str = "STRICT") -> bool:
         return True
 
-    ##############################################################
     # -------------------  ELEMENT UTILITIES  ------------------ #
-    ##############################################################
 
     def element(self, name: str):
         name = name.upper().strip()
@@ -122,21 +108,18 @@ class Schema(Signal):
     def directobject(self) -> Frame:
         return self.root()["DIRECTOBJECT"].singleton()
 
-    def adv(self):
+    def adv(self) -> Frame:
         return self.root()["ADV"].singleton()
 
-    def aux(self):
+    def aux(self) -> Frame:
         return self.root()["AUX"].singleton()
 
     def tokenize_element(self, element: Frame):
         if "LEX" in element:
             l = Lexeme.from_frame(element["LEX"].singleton())
             return l.anchor["WORD"].singleton()
-            # print(l.debug())
 
-    ##############################################################
     # -----------------------  INTERNAL  ----------------------- #
-    ##############################################################
 
     def __build(self, content):
 
@@ -144,16 +127,11 @@ class Schema(Signal):
 
         def _construct_element(_id, _space, _content):
             elem = Frame(f"@{_space}.{_id}.?")
-            # print(_id)
-            # print(f"\tSYN")
             for item in list(_content["SYN-STRUC"].items()):
-                # print(f"\t{item}")
                 elem[item[0]] = item[1]  # add syntactic constraints
                 if item[0] == "ROOT":
                     element_vars[item[1]] = elem
-            # print("\tSEM")
             for item in list(_content["SEM-STRUC"].items()):
-                # print(f"\t{item}")
                 elem["SEM"] = item[0]  # add semantic constraint
                 if item[1]:  # if case-role constraints exist
                     if isinstance(item[1], OrderedDict):
@@ -163,12 +141,9 @@ class Schema(Signal):
                             elif isinstance([relation[1], OrderedDict]):
                                 elem["SEM"][relation[0]] = list(
                                     relation[1].items())[0][1]
-                    # elif isinstance(item[1], list):
-                    #     print([i for i in item[1]])
             return elem
 
         for e in content["SYN-STRUC"]:
-            # pprint(content)
             strucs = {
                 "SYN-STRUC": content["SYN-STRUC"][e],
                 "SEM-STRUC": content["SEM-STRUC"][e]
@@ -182,18 +157,10 @@ class Schema(Signal):
                 self.anchor[meta] = content[meta]
         
         for e in self.elements():
-            # print(e.id)
-            # pprint(e.debug())
             for f in e.get_slot("SEM").facets():  # Get slots
-                # print(list(f.list())[0])
-                if isinstance(list(f.list())[0], list):
-                    if list(f.list())[0] in element_vars.keys():
-                        e.get_slot("SEM").get_facet(f.type).assign_filler(
-                            element_vars[list(f.list())[0]])
-                # elif isinstance(list(f.list())[0], OrderedDict):
-                    # print(list(f.list()))
-                    # TODO - Not sure if something needs to be done here if facet is a dict
-                    # pass
+                if (isinstance(list(f.list())[0], list)) and (list(f.list())[0] in element_vars.keys()):
+                    e.get_slot("SEM").get_facet(f.type).assign_filler(
+                        element_vars[list(f.list())[0]])
 
 
     def __link_tmr(self, tmr: TMR):
@@ -218,11 +185,8 @@ class Schema(Signal):
                 return root["DESTINATION"].singleton()
             return None
 
-        # [print(f"\n{c.id}:\n{c.debug()}") for c in tmr.constituents()]
-
         for element in self.constituents():
             tmr_element = get_tmr_element(element, tmr)
-            # print(tmr_element)
             if tmr_element != None:
                 element["TMR_ELEMENT"] = tmr_element
                 elemid = element["TMR_ELEMENT"].singleton().id.split(".")[1].replace("-", "_")
@@ -233,8 +197,13 @@ class Schema(Signal):
                             word = Lexeme.from_frame(wordtag)
                             element["LEX"] = word.anchor
                         else:
-                            word = Lexeme.build(Lexicon().get_sense(wordtag))
-                            element["LEX"] = word.anchor
+                            parts = wordtag.split("-")
+                            if len(parts) > 1:
+                                word = Lexeme.build(Lexicon().get_sense(wordtag))
+                                element["LEX"] = word.anchor
+                            else:
+                                element["LEX"] = wordtag
+
             elif "ROOT-WORD" in element:
                 word =  Lexeme.build(Lexicon().get_sense(element["ROOT-WORD"].singleton()))
                 element["LEX"] = word.anchor
