@@ -5,8 +5,8 @@ from collections import OrderedDict
 from flask import abort, Flask, request, render_template, redirect, session
 from flask_cors import CORS
 from flask_socketio import SocketIO
-from repo.api import SchemaAPI
-from repo.management import active, handle
+from schema.api import SchemaAPI
+from schema.management import active, handle
 
 app = Flask(__name__, template_folder="../ui/templates/")
 CORS(app)
@@ -31,7 +31,7 @@ def env_payload():
 ### /service/api - routes for query, returning JSON formatted results
 
 
-@app.route("/repo/api/sense", methods=["GET"])
+@app.route("/schema/api/sense", methods=["GET"])
 def api_sense():
     if "sense" not in request.args:
         return "Parameter 'sense' required.", 403
@@ -44,7 +44,7 @@ def api_sense():
         return "No such sense.", 404
 
 
-@app.route("/repo/api/schema", methods=["GET"])
+@app.route("/schema/api/schema", methods=["GET"])
 def api_schema():
     if "tag" not in request.args:
         return "Parameter 'tag' required.", 403
@@ -60,7 +60,7 @@ def api_schema():
         return "No such schema.", 404
     return json.dumps(results)
 
-@app.route("/repo/api/cat", methods=["GET"])
+@app.route("/schema/api/cat", methods=["GET"])
 def api_cat():
     if "cat" not in request.args:
         return "Parameter 'cat' required.", 403
@@ -76,7 +76,7 @@ def api_cat():
         return "No such schema.", 404
     return json.dumps(results)
 
-@app.route("/repo/api/list", methods=["GET"])
+@app.route("/schema/api/list", methods=["GET"])
 def api_list():
     if "tag" not in request.args:
         return "Parameter 'tag' required.", 403
@@ -86,7 +86,7 @@ def api_list():
     return json.dumps(results)
 
 
-@app.route("/repo/api/search", methods=["GET"])
+@app.route("/schema/api/search", methods=["GET"])
 def api_search():
     if "name" not in request.args:
         return "Parameter 'name' required.", 403
@@ -111,10 +111,10 @@ def api_search():
     return json.dumps(results)
 
 
-### /repo/view - routes for the editor and browser ui, GET only
+### /schema/view - routes for the editor and browser ui, GET only
 
 
-@app.route("/repo/view/", methods=["GET"])
+@app.route("/schema/view/", methods=["GET"])
 def view():
     page = 0
     senses = SchemaAPI().search("*", include_fields=["DEF"], page=page)
@@ -122,7 +122,7 @@ def view():
     return render_template("editor.html", senses=senses, page=page, env=env_payload())
 
 
-@app.route("/repo/view/toggle/editing")
+@app.route("/schema/view/toggle/editing")
 def view_toggle_editing():
     if "editing" not in session:
         session["editing"] = False
@@ -132,10 +132,10 @@ def view_toggle_editing():
     return "OK"
 
 
-### /repo/edit - routes for the editor api, POST only
+### /schema/edit - routes for the editor api, POST only
 
 
-@app.route("/repo/edit/save/<sense>", methods=["POST"])
+@app.route("/schema/edit/save/<sense>", methods=["POST"])
 def edit_save(sense):
     if not EDITING_ENABLED:
         abort(403)
@@ -146,7 +146,7 @@ def edit_save(sense):
     return "OK"
 
 
-@app.route("/repo/edit/delete/<sense>", methods=["POST"])
+@app.route("/schema/edit/delete/<sense>", methods=["POST"])
 def edit_delete(sense):
     if not EDITING_ENABLED:
         abort(403)
@@ -158,13 +158,13 @@ def edit_delete(sense):
 ### /lexicon/manage - routes for the version management system
 
 
-@app.route("/repo/manage", methods=["GET"])
+@app.route("/schema/manage", methods=["GET"])
 def manage():
 
     message = request.args["message"] if "message" in request.args else None
     error = request.args["error"] if "error" in request.args else None
 
-    from repo.management import active, list_collections, list_local_archives, list_remote_archives, ARCHIVE_PATH
+    from schema.management import active, list_collections, list_local_archives, list_remote_archives, ARCHIVE_PATH
     payload = {
         "active": active(),
         "installed": list_collections(),
@@ -178,50 +178,50 @@ def manage():
     return render_template("manager.html", payload=payload, env=env_payload())
 
 
-@app.route("/repo/manage/activate", methods=["POST"])
+@app.route("/schema/manage/activate", methods=["POST"])
 def manage_activate():
 
     repo = request.form["repository"]
 
     try:
-        from repo.management import activate
+        from schema.management import activate
         activate(repo)
     except Exception as e:
         return redirect("/manage?error=" + e.message)
 
-    return redirect("/repo/manage")
+    return redirect("/schema/manage")
 
-@app.route("/repo/manage/copy", methods=["POST"])
+@app.route("/schema/manage/copy", methods=["POST"])
 def manage_copy():
 
     name = request.form["name"]
     repo = request.form["repository"]
 
     try:
-        from repo.management import copy_collection
+        from schema.management import copy_collection
         copy_collection(repo, name)
     except Exception as e:
-        return redirect("/repo/manage?error=" + e.message)
+        return redirect("/schema/manage?error=" + e.message)
 
     message = f"Copied {repo} to {name}."
-    return redirect("/repo/manage?message=" + message)
+    return redirect("/schema/manage?message=" + message)
 
-@app.route("/repo/manage/rename", methods=["POST"])
+@app.route("/schema/manage/rename", methods=["POST"])
 def manage_rename():
 
     name = request.form["name"]
     repo = request.form["repository"]
 
     try:
-        from repo.management import rename_collection
+        from schema.management import rename_collection
         rename_collection(repo, name)
     except Exception as e:
-        return redirect("/repo/manage?error=" + e.message)
+        return redirect("/schema/manage?error=" + e.message)
 
     message = f"Renamed {repo} to {name}."
-    return redirect("/repo/manage?message=" + message)
+    return redirect("/schema/manage?message=" + message)
 
-@app.route("/repo/manage/archive", methods=["POST"])
+@app.route("/schema/manage/archive", methods=["POST"])
 def manage_archive():
 
     print(request.args)
@@ -232,7 +232,7 @@ def manage_archive():
     filename = name + ".gz"
 
     try:
-        from repo.management import collection_to_file, list_collections, rename_collection, ARCHIVE_PATH
+        from schema.management import collection_to_file, list_collections, rename_collection, ARCHIVE_PATH
 
         if name != repo and name in list_collections():
             raise Exception("Cannot archive using another name that already exists.")
@@ -250,32 +250,32 @@ def manage_archive():
         if name != repo:
             rename_collection(name, repo)
     except Exception as e:
-        return redirect("/repo/manage?error=" + e.message)
+        return redirect("/schema/manage?error=" + e.message)
 
     message = "Archived " + repo + " to " + filename + "."
-    return redirect("/repo/manage?message=" + message)
+    return redirect("/schema/manage?message=" + message)
 
-@app.route("/repo/manage/delete", methods=["POST"])
+@app.route("/schema/manage/delete", methods=["POST"])
 def manage_delete():
 
     repo = request.form["repository"]
 
     try:
-        from repo.management import delete_collection
+        from schema.management import delete_collection
         delete_collection(repo)
     except Exception as e:
-        return redirect("/repo/manage?error=" + e.message)
+        return redirect("/schema/manage?error=" + e.message)
 
     message = "Deleted " + repo + " from the database."
-    return redirect("/repo/manage?message=" + message)
+    return redirect("/schema/manage?message=" + message)
 
-@app.route("/repo/manage/local/install", methods=["POST"])
+@app.route("/schema/manage/local/install", methods=["POST"])
 def manage_local_install():
 
     repo = request.form["repository"]
 
     try:
-        from repo.management import file_to_collection, ARCHIVE_PATH
+        from schema.management import file_to_collection, ARCHIVE_PATH
         path = os.environ[ARCHIVE_PATH] if ARCHIVE_PATH in os.environ else None
 
         if path is None:
@@ -285,52 +285,52 @@ def manage_local_install():
 
         file_to_collection(path)
     except Exception as e:
-        return redirect("/repo/manage?error=" + e.message)
+        return redirect("/schema/manage?error=" + e.message)
 
     message = "Installed " + repo + "."
-    return redirect("/repo/manage?message=" + message)
+    return redirect("/schema/manage?message=" + message)
 
-@app.route("/repo/manage/local/publish", methods=["POST"])
+@app.route("/schema/manage/local/publish", methods=["POST"])
 def manage_local_publish():
 
     repo = request.form["repository"]
 
     try:
-        from repo.management import publish_archive
+        from schema.management import publish_archive
         publish_archive(repo)
     except Exception as e:
-        return redirect("/repo/manage?error=" + e.message)
+        return redirect("/schema/manage?error=" + e.message)
 
     message = "Published " + repo + "."
-    return redirect("/repo/manage?message=" + message)
+    return redirect("/schema/manage?message=" + message)
 
-@app.route("/repo/manage/local/delete", methods=["POST"])
+@app.route("/schema/manage/local/delete", methods=["POST"])
 def manage_local_delete():
 
     repo = request.form["repository"]
 
     try:
-        from repo.management import delete_local_archive
+        from schema.management import delete_local_archive
         delete_local_archive(repo)
     except Exception as e:
-        return redirect("/repo/manage?error=" + e.message)
+        return redirect("/schema/manage?error=" + e.message)
 
     message = "Deleted archive " + repo + "."
-    return redirect("/repo/manage?message=" + message)
+    return redirect("/schema/manage?message=" + message)
 
-@app.route("/repo/manage/remote/download", methods=["POST"])
+@app.route("/schema/manage/remote/download", methods=["POST"])
 def manage_remote_download():
 
     repo = request.form["repository"]
 
     try:
-        from repo.management import download_archive
+        from schema.management import download_archive
         download_archive(repo)
     except Exception as e:
-        return redirect("/repo/manage?error=" + e.message)
+        return redirect("/schema/manage?error=" + e.message)
 
     message = "Downloaded " + repo + "."
-    return redirect("/repo/manage?message=" + message)
+    return redirect("/schema/manage?message=" + message)
 
 
 if __name__ == '__main__':

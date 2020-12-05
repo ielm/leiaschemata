@@ -1,10 +1,10 @@
-import repo.management
+import schema.management
 from typing import Union, List
 
 
 class SchemaAPI:
     def __init__(self):
-        self.collection = repo.management.handle()
+        self.collection = schema.management.handle()
 
     def get_schema(self, tag: str, cat: Union[None, str] = None) -> dict:
         schema_filter = {"$or": [{"TAG": tag}]}
